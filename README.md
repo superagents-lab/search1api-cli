@@ -277,7 +277,7 @@ applications can cancel tool calls.
 ## Agent skill and plugins
 
 This repo is the shared distribution point for the Search1API Agent Skill and
-compatibility manifests for Claude Code, ChatGPT/Codex, and Cursor. Dedicated
+compatibility manifests for ChatGPT/Codex and Cursor. The Claude plugin,
 OpenCode, OpenClaw, and Grok Build plugins reuse the same Search1API SDK,
 hosted MCP server, and research workflow from their own repositories.
 
@@ -289,14 +289,17 @@ Install the standalone skill:
 npx skills add superagents-lab/search1api-cli
 ```
 
-### Claude Code
+### Claude
 
-Install the Claude Code plugin from Search1API's custom marketplace:
+Search1API is listed in the Claude directory as a connector:
+[claude.ai/directory/connectors/search1api](https://claude.ai/directory/connectors/search1api).
+Add it from **Customize > Connectors** in claude.ai; it also works in Claude
+Code. The Claude plugin, which pairs the connector with a research skill, is
+maintained in
+[`search1api-mcp/claude-plugin`](https://github.com/superagents-lab/search1api-mcp/tree/main/claude-plugin).
 
-```bash
-claude plugin marketplace add superagents-lab/search1api-cli
-claude plugin install search1api@superagents-lab
-```
+To use the `s1` CLI from Claude Code instead, install the standalone skill with
+`npx skills add superagents-lab/search1api-cli`.
 
 ### Codex
 
@@ -345,13 +348,6 @@ details:
 - [`grok-search1api`](https://github.com/superagents-lab/grok-search1api)
 
 ### Development and directories
-
-Developers can validate or test the plugin bundle from a local clone:
-
-```bash
-claude plugin validate . --strict
-claude --plugin-dir .
-```
 
 The remote server is also published as
 [`io.github.superagents-lab/search1api`](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.superagents-lab%2Fsearch1api)

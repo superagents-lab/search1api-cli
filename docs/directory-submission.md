@@ -1,8 +1,14 @@
 # Directory Submission Kit
 
-This document keeps the Claude and OpenAI submission copy aligned with the
-public plugin package. Reverify every URL and production behavior immediately
-before submitting.
+This document keeps the OpenAI submission copy aligned with the public plugin
+package. Reverify every URL and production behavior immediately before
+submitting.
+
+The Claude directory listings no longer come from this repository. The remote
+MCP server is published as a Community connector at
+https://claude.ai/directory/connectors/search1api, and the Claude plugin
+(connector plus research skill) is maintained in
+[`search1api-mcp/claude-plugin`](https://github.com/superagents-lab/search1api-mcp/tree/main/claude-plugin).
 
 Do not commit reviewer credentials or API keys. Enter a dedicated, revocable
 test credential only in the submission portal.
@@ -44,100 +50,6 @@ WeChat, and Bilibili.
 **Suggested categories:** Research, Productivity, Developer Tools
 
 **Permanent slug:** `search1api`
-
-## Claude Plugin Directory
-
-- Submission type: public GitHub plugin.
-- Repository URL: https://github.com/superagents-lab/search1api-cli
-- Plugin root: repository root.
-- Components: one Agent Skill and one remote MCP connection.
-- Custom marketplace:
-  - `claude plugin marketplace add superagents-lab/search1api-cli`
-  - `claude plugin install search1api@superagents-lab`
-- Validation:
-  - `claude plugin validate . --strict`
-  - `claude --plugin-dir . plugin list`
-  - `claude --plugin-dir . plugin details search1api@inline`
-
-Suggested submission note:
-
-> Search1API bundles a research skill with a read-only remote MCP connector.
-> The same skill can use the authenticated `s1` CLI in local Claude Code
-> environments and the remote MCP server in Cowork or other environments
-> without a local binary. The plugin source is MIT-licensed and the MCP server
-> is independently published at
-> `io.github.superagents-lab/search1api` in the official MCP Registry.
-
-## Claude Connectors Directory
-
-### Connection
-
-- Server URL: https://mcp.search1api.com/mcp
-- Transport: Streamable HTTP
-- URL model: every user connects to the same URL
-- Access: read-only public-web operations
-- Allowed link URIs: none; the server does not use the MCP Apps
-  `ui/open-link` capability
-
-### Tools
-
-| Tool | Purpose |
-| --- | --- |
-| `search` | Search the live public web and return citable results |
-| `fetch` | Retrieve full readable content for a search result URL |
-| `news` | Search current news and return citable articles |
-| `crawl` | Read a specific public URL |
-| `sitemap` | Discover public links on a site |
-| `trending` | Retrieve current trending topics from a supported source |
-
-All six tools are read-only and declare titles, input/output schemas,
-structured output, and `readOnlyHint: true`, `destructiveHint: false`, and
-`openWorldHint: true`.
-
-### Use Cases
-
-1. Research a current topic across multiple public sources and cite every
-   material claim.
-2. Find a relevant page with `search`, then retrieve its full readable content
-   with `fetch`.
-3. Track recent company, product, or technology news.
-4. Discover documentation or content URLs from a public site's sitemap.
-5. Explore current GitHub or Hacker News trends.
-
-Users need a Search1API account. New accounts receive the currently advertised
-starter credits; do not promise a fixed grant in directory copy unless the
-production pricing page still confirms it at submission time.
-
-### Authentication
-
-- OAuth 2.1 protected resource discovery is exposed from the MCP domain.
-- Authorization server: https://clerk.search1api.com
-- Dynamic Client Registration is supported.
-- Authorization Code with PKCE S256 and refresh tokens are supported.
-- Requested scopes: `openid offline_access`.
-- Existing user-managed API keys remain available for non-OAuth clients, but
-  the directory listing should use OAuth.
-
-### Data Handling
-
-- Underlying API: Search1API's first-party API.
-- Search1API may transmit queries, submitted URLs, and request parameters to
-  search, crawling, network, or web-content providers needed to fulfill the
-  request.
-- The connector handles public-web research inputs and results. It is not
-  intended for personal health data or other sensitive personal information.
-- The connector does not write to user data or perform financial transactions.
-- The connector does not intentionally return sponsored content.
-- The privacy policy must disclose queries, URLs, usage and technical logs,
-  service providers, retention, deletion requests, and host-application data
-  flow before submission.
-
-### Reviewer Access
-
-Create a dedicated reviewer account or revocable API key with enough credits to
-run every tool. It must not require MFA, SMS, email confirmation, or access to a
-private network. Put the credential and exact setup steps only in the portal.
-Revoke it after the review is complete.
 
 ## OpenAI Universal Plugins Directory
 
