@@ -1,12 +1,14 @@
 import { request } from "./api.js";
 
-export type TimeRange = "day" | "month" | "year";
+export type TimeRange = "day" | "week" | "month" | "year";
 
 export type SearchService =
   | "google"
   | "bing"
+  | "bingcn"
   | "duckduckgo"
   | "yahoo"
+  | "yandex"
   | "x"
   | "reddit"
   | "github"
@@ -15,7 +17,8 @@ export type SearchService =
   | "wechat"
   | "bilibili"
   | "imdb"
-  | "wikipedia";
+  | "wikipedia"
+  | "grokipedia";
 
 export type NewsService =
   | "google"
@@ -34,6 +37,8 @@ export interface RequestOptions {
 export interface SearchOptions extends RequestOptions {
   maxResults?: number;
   searchService?: SearchService;
+  /** Native results page (1-100); only bing, bingcn, baidu, and grokipedia paginate. */
+  page?: number;
   crawlResults?: number;
   includeSites?: string[];
   excludeSites?: string[];
@@ -54,6 +59,17 @@ export interface SearchResult {
   link: string;
   snippet: string;
   content?: string;
+  /** ISO 8601, when the source exposes a date. */
+  published_date?: string;
+  /** `github` results. */
+  kind?: "repo" | "issue" | "pr" | "discussion";
+  stars?: number;
+  language?: string;
+  /** `github` threads and `hackernews` news results. */
+  num_comments?: number;
+  /** `hackernews` news results; `link` is the discussion thread. */
+  points?: number;
+  story_url?: string;
 }
 
 export interface SearchResponse {
@@ -92,6 +108,28 @@ export interface TrendingResponse {
   results: TrendingResult[];
 }
 
+export interface AskResult {
+  title: string;
+  link: string;
+  snippet: string;
+  published_date?: string;
+  /** Engine that returned the result. */
+  source: string;
+  /** Relevance to the query, 0.5-1. */
+  relevance: number;
+}
+
+export interface AskResponse {
+  query: string;
+  intent: {
+    search_query: string;
+    sources: string[];
+    time_range: TimeRange | null;
+  };
+  results: AskResult[];
+  errors: Array<{ source: string; message: string }>;
+}
+
 export interface TrendingOptions extends RequestOptions {
   maxResults?: number;
 }
@@ -107,6 +145,7 @@ function searchBody(
     search_service: options.searchService ?? defaults.searchService,
     crawl_results: options.crawlResults ?? 0,
   };
+  if ("page" in options && options.page !== undefined) body.page = options.page;
   if (options.includeSites) body.include_sites = options.includeSites;
   if (options.excludeSites) body.exclude_sites = options.excludeSites;
   if (options.timeRange) body.time_range = options.timeRange;
@@ -133,6 +172,17 @@ export async function news(
     searchBody(query, options, { maxResults: 10, searchService: "bing" }),
     options
   );
+}
+
+/**
+ * Agentic search: Search1API picks up to five engines and a time window from a
+ * natural-language query and returns at most 10 relevant results. 5 credits.
+ */
+export async function ask(
+  query: string,
+  options: RequestOptions = {}
+): Promise<AskResponse> {
+  return request<AskResponse>("/ask", { query }, options);
 }
 
 export async function crawl(

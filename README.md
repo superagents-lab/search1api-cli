@@ -59,7 +59,7 @@ export SEARCH1API_KEY=<your-api-key>
 
 ### search
 
-Search the web across 13 search engines.
+Search the web with one engine at a time (Google by default).
 
 ```bash
 s1 search "Claude AI"
@@ -67,19 +67,34 @@ s1 search "rust async" -n 5 -s google
 s1 search "machine learning" --include arxiv.org github.com
 s1 search "breaking news" -t day
 s1 search "web framework" -c 3    # crawl top 3 results for full content
+s1 search "kubernetes" -s bing -p 2    # second page of Bing results
 ```
 
 | Option | Description | Default |
 |--------|-------------|---------|
 | `-n, --max-results <number>` | Number of results (1-50) | 10 |
 | `-s, --service <service>` | Search engine | google |
+| `-p, --page <number>` | Results page (`bing`, `bingcn`, `baidu`, `grokipedia`) | 1 |
 | `-c, --crawl <number>` | Crawl N results for full content | 0 |
 | `--include <sites...>` | Only include these sites | |
 | `--exclude <sites...>` | Exclude these sites | |
-| `-t, --time <range>` | Time range: `day`, `month`, `year` | |
+| `-t, --time <range>` | Time range: `day`, `week`, `month`, `year` | |
 | `--json` | Output raw JSON | |
 
-Available search services: `google`, `bing`, `duckduckgo`, `yahoo`, `x`, `reddit`, `github`, `youtube`, `arxiv`, `wechat`, `bilibili`, `imdb`, `wikipedia`
+Available search services: `google`, `bing`, `bingcn`, `duckduckgo`, `yahoo`, `yandex`, `x`, `reddit`, `github`, `youtube`, `arxiv`, `wechat`, `bilibili`, `imdb`, `wikipedia`, `grokipedia`
+
+### ask
+
+Describe what you need in plain language and let Search1API choose up to five
+engines and a time window. It returns at most 10 relevant results with their
+source engine and relevance score. Each completed request costs 5 credits.
+
+```bash
+s1 ask "What are developers saying about Bun 1.3 this month?"
+s1 ask "recent papers on speculative decoding" --json
+```
+
+Use `search` when you already know which engine and keywords you want.
 
 ### news
 
@@ -97,7 +112,7 @@ s1 news "tech layoffs" -s hackernews -t day
 | `-c, --crawl <number>` | Crawl N results for full content | 0 |
 | `--include <sites...>` | Only include these sites | |
 | `--exclude <sites...>` | Exclude these sites | |
-| `-t, --time <range>` | Time range: `day`, `month`, `year` | |
+| `-t, --time <range>` | Time range: `day`, `week`, `month`, `year` | |
 | `--json` | Output raw JSON | |
 
 Available news services: `google`, `bing`, `duckduckgo`, `yahoo`, `hackernews`
@@ -260,7 +275,7 @@ refresh, request handling, and typed Search1API methods instead of maintaining
 a second client:
 
 ```ts
-import { search, crawl } from "search1api-cli/sdk";
+import { ask, search, crawl } from "search1api-cli/sdk";
 
 const results = await search("OpenCode plugins", {
   maxResults: 5,
@@ -268,6 +283,7 @@ const results = await search("OpenCode plugins", {
 });
 
 const page = await crawl("https://example.com");
+const answer = await ask("What changed in the latest OpenCode release?");
 ```
 
 The SDK uses `SEARCH1API_KEY`, the shared `s1 login` OAuth session, or the

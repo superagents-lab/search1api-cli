@@ -29,6 +29,7 @@ if (isBinary && notifier.update) {
   notifier.notify();
 }
 import { registerNewsCommand } from "./commands/news.js";
+import { registerAskCommand } from "./commands/ask.js";
 import { registerCrawlCommand } from "./commands/crawl.js";
 import { registerSitemapCommand } from "./commands/sitemap.js";
 import { registerLearnCommand } from "./commands/learn.js";
@@ -42,11 +43,12 @@ const program = new Command();
 
 program
   .name("search1api")
-  .description("CLI for Search1API - search, news, crawl, sitemap, learn & trending")
+  .description("CLI for Search1API - search, ask, news, crawl, sitemap, learn & trending")
   .version(pkg.version);
 
 registerSearchCommand(program);
 registerNewsCommand(program);
+registerAskCommand(program);
 registerCrawlCommand(program);
 registerSitemapCommand(program);
 registerLearnCommand(program);
@@ -63,6 +65,7 @@ if (process.argv.length <= 2) {
 
   ${chalk.bold("Quick start:")}
     ${chalk.blue("s1 search")} ${chalk.dim('"your query"')}        Search the web
+    ${chalk.blue("s1 ask")} ${chalk.dim('"your question"')}        Let Search1API pick the sources
     ${chalk.blue("s1 news")} ${chalk.dim('"your query"')}          Search for news
     ${chalk.blue("s1 crawl")} ${chalk.dim("<url>")}               Extract content from a URL
     ${chalk.blue("s1 learn")} ${chalk.dim("<url>")}               Turn a URL into an Agent Skill

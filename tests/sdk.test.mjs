@@ -4,7 +4,7 @@ import test from "node:test";
 process.env.SEARCH1API_KEY = "test-key";
 process.env.SEARCH1API_API_BASE = "https://api.example.test";
 
-const { crawl, news, search, sitemap, trending } = await import("../dist/sdk.js");
+const { ask, crawl, news, search, sitemap, trending } = await import("../dist/sdk.js");
 
 async function captureRequest(run, response) {
   const originalFetch = globalThis.fetch;
@@ -77,4 +77,39 @@ test("an explicit SDK API key overrides shared CLI credentials", async () => {
     new Headers(captured.init.headers).get("Authorization"),
     "Bearer plugin-key"
   );
+});
+
+test("search sends pagination and accepts the new engines", async () => {
+  for (const searchService of ["bingcn", "yandex", "grokipedia"]) {
+    const { captured } = await captureRequest(
+      () => search("kubernetes", { searchService, page: 2, timeRange: "week" }),
+      { results: [] }
+    );
+    assert.deepEqual(JSON.parse(captured.init.body), {
+      query: "kubernetes",
+      max_results: 10,
+      search_service: searchService,
+      crawl_results: 0,
+      page: 2,
+      time_range: "week",
+    });
+  }
+});
+
+test("ask sends only the query to /ask", async () => {
+  const response = {
+    query: "recent papers on speculative decoding",
+    intent: { search_query: "speculative decoding", sources: ["arxiv"], time_range: null },
+    results: [],
+    errors: [],
+  };
+  const { captured, result } = await captureRequest(
+    () => ask("recent papers on speculative decoding"),
+    response
+  );
+  assert.deepEqual(result, response);
+  assert.equal(captured.input, "https://api.example.test/ask");
+  assert.deepEqual(JSON.parse(captured.init.body), {
+    query: "recent papers on speculative decoding",
+  });
 });
