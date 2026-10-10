@@ -28,3 +28,15 @@ test("does not expose retired reasoning or model commands", () => {
   assert.match(welcome.stdout, /Quick start:/);
   assertRetiredCommandsAreAbsent(welcome.stdout);
 });
+
+test("exposes ask and the new search options", () => {
+  const help = runCli("--help");
+  assert.equal(help.status, 0, help.stderr);
+  assert.match(help.stdout, /ask \[options\] <query>/);
+
+  const searchHelp = runCli("search", "--help");
+  assert.equal(searchHelp.status, 0, searchHelp.stderr);
+  assert.match(searchHelp.stdout, /--page <number>/);
+  assert.match(searchHelp.stdout, /grokipedia/);
+  assert.match(searchHelp.stdout, /day, week, month, year/);
+});

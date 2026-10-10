@@ -13,7 +13,7 @@ export function registerNewsCommand(program: Command): void {
     .option("-c, --crawl <number>", "crawl N results for full content", "0")
     .option("--include <sites...>", "only include these sites")
     .option("--exclude <sites...>", "exclude these sites")
-    .option("-t, --time <range>", "time range: day, month, year")
+    .option("-t, --time <range>", "time range: day, week, month, year")
     .option("--json", "output raw JSON")
     .action(async (query: string, opts) => {
       const options: NewsOptions = {

@@ -1,7 +1,7 @@
 ---
 name: search1api
 description: >
-  Live web search, page retrieval, news, sitemap discovery, trending topics, and turning a URL into a reusable Agent Skill — all through the Search1API CLI (`s1`). Use this skill whenever the user wants to search the web, look something up, research a topic, read or summarize a URL, check current news, explore a site's links, see trending topics, check API balance, or teach an agent a URL so it can be used later. Trigger on phrases like "search for", "look up", "find out about", "what's happening with", "any news on", "what does this link say", "read this page", "summarize this URL", "trending on GitHub", "learn this URL", "learn this site", "turn these docs into a skill", "记住这个链接", "学会这个文档", or when the user shares a bare URL.
+  Live web search, agentic search, page retrieval, news, sitemap discovery, trending topics, and turning a URL into a reusable Agent Skill — all through the Search1API CLI (`s1`). Use this skill whenever the user wants to search the web, look something up, research a topic, read or summarize a URL, check current news, explore a site's links, see trending topics, check API balance, or teach an agent a URL so it can be used later. Trigger on phrases like "search for", "look up", "find out about", "what's happening with", "any news on", "what does this link say", "read this page", "summarize this URL", "trending on GitHub", "learn this URL", "learn this site", "turn these docs into a skill", "记住这个链接", "学会这个文档", or when the user shares a bare URL.
 ---
 
 # Search1API
@@ -67,6 +67,7 @@ error.
 |---|---|
 | Shares a URL / link → read and summarize | `s1 crawl <url>` |
 | Wants to search the web | `s1 search "<query>"` |
+| Asks a question that spans sources, unsure where to look | `s1 ask "<question>"` |
 | Wants the full page behind a search result | `s1 crawl <url>` |
 | Wants news | `s1 news "<query>"` |
 | Wants to explore a site's links | `s1 sitemap <url>` |
@@ -87,6 +88,16 @@ These look similar and are not:
   is the normal case, not an escalation. When it is genuinely unclear, run
   `--discover` and show the user what a full run would cover.
 
+### Search or ask?
+
+- You know the engine and keywords (a plain web lookup, "on Reddit", "GitHub
+  repos") → **`s1 search`**. 1 credit, that engine's own ranking.
+- The question spans communities or sources and you would otherwise run several
+  searches ("what are developers saying about X this month", "recent papers and
+  discussion on Y") → **`s1 ask`** with the user's request in natural language.
+  It picks up to five engines and a time window, drops off-topic results, and
+  returns at most 10. It costs 5 credits, so don't use it for a quick lookup.
+
 ## Dynamic tuning
 
 Adapt parameters to user intent — don't just use defaults:
@@ -94,10 +105,13 @@ Adapt parameters to user intent — don't just use defaults:
 - **Quick lookup** ("search for X", "what is X") → `-n 5`, no crawl
 - **Deep research** ("research X thoroughly", "comprehensive analysis") → `-n 15`, then crawl top 3–5 results with separate `s1 crawl` calls
 - **User specifies a number** ("find 10 articles") → match it with `-n`
-- **Recency signals** ("latest", "recent", "this week") → `-t day` or `-t month`
+- **Recency signals** ("latest", "recent", "this week") → `-t day`, `-t week`, or `-t month`
 - **Domain-specific** ("search on Reddit", "find GitHub repos") → `-s reddit`, `-s github`, etc.
 - **Site-scoped** ("only from arxiv.org") → `--include arxiv.org`
-- **Chinese queries** → use `google`, `bing`, `wechat`, or `bilibili` according to intent
+- **Chinese queries** → use `google`, `bing`, `bingcn` (mainland-China web), `wechat`, or `bilibili` according to intent
+- **Russian-language queries** → `-s yandex`
+- **Encyclopedia lookups** → `-s wikipedia`, or `-s grokipedia` with an English query; when the answer uses Grokipedia results, note "Powered by xAI"
+- **More results from the same engine** → `-p 2` and up (bing, bingcn, baidu, and grokipedia only)
 
 ## Commands
 
@@ -111,13 +125,17 @@ s1 search "<query>" [options]
 |---|---|---|
 | `-n, --max-results <N>` | Number of results (1–50) | 10 |
 | `-s, --service <engine>` | Search engine | google |
+| `-p, --page <N>` | Results page (bing, bingcn, baidu, grokipedia) | 1 |
 | `-c, --crawl <N>` | Crawl N results for full content | 0 |
 | `--include <sites...>` | Only include these sites | |
 | `--exclude <sites...>` | Exclude these sites | |
-| `-t, --time <range>` | day, month, year | |
+| `-t, --time <range>` | day, week, month, year | |
 | `--json` | Raw JSON output | |
 
-Search engines: google, bing, duckduckgo, yahoo, x, reddit, github, youtube, arxiv, wechat, bilibili, imdb, wikipedia
+Search engines: google, bing, bingcn, duckduckgo, yahoo, yandex, x, reddit, github, youtube, arxiv, wechat, bilibili, imdb, wikipedia, grokipedia
+
+Results show `published_date` when the source exposes one; `--json` also
+carries `kind`, `stars`, `language`, and `num_comments` for `github` results.
 
 ### news
 
@@ -125,9 +143,23 @@ Search engines: google, bing, duckduckgo, yahoo, x, reddit, github, youtube, arx
 s1 news "<query>" [options]
 ```
 
-Same options as search. News services: google, bing, duckduckgo, yahoo, hackernews. Default service: bing.
+Same options as search except `--page`. News services: google, bing, duckduckgo, yahoo, hackernews. Default service: bing.
+`hackernews` results link to the discussion thread; with `--json` the article
+is in `story_url`, with `points` and `num_comments`.
 
 When user asks for breaking/latest news, always add `-t day`.
+
+### ask
+
+```bash
+s1 ask "<question in natural language>" [--json]
+```
+
+Search1API reads the question, picks up to five engines (web, Hacker News,
+Reddit, GitHub, X, arXiv, Wikipedia, and more) and a time window from phrases
+like "this week", and returns at most 10 relevant results with their source
+engine and relevance score. The first line of the output shows which engines and
+window were used. Costs 5 credits per completed request.
 
 ### crawl
 

@@ -5,6 +5,22 @@ interface SearchResult {
   link: string;
   snippet: string;
   content?: string;
+  published_date?: string;
+}
+
+interface AskResult extends SearchResult {
+  source: string;
+  relevance: number;
+}
+
+interface AskResponse {
+  intent: {
+    search_query: string;
+    sources: string[];
+    time_range: string | null;
+  };
+  results: AskResult[];
+  errors: Array<{ source: string; message: string }>;
 }
 
 interface TrendingResult {
@@ -22,13 +38,36 @@ export function printSearchResults(results: SearchResult[], showContent = false)
   for (let i = 0; i < results.length; i++) {
     const r = results[i];
     console.log(chalk.bold.blue(`${i + 1}. ${r.title}`));
-    console.log(chalk.dim(r.link));
+    console.log(chalk.dim(r.published_date ? `${r.link} · ${r.published_date}` : r.link));
     console.log(r.snippet);
     if (showContent && r.content) {
       console.log(chalk.cyan("\n--- Content ---"));
       console.log(r.content);
     }
     console.log();
+  }
+}
+
+export function printAskResults(data: AskResponse): void {
+  const { intent } = data;
+  const window = intent.time_range ? `, past ${intent.time_range}` : "";
+  console.log(
+    chalk.dim(`Searched ${intent.sources.join(", ") || "no engines"} for "${intent.search_query}"${window}\n`)
+  );
+
+  if (!data.results.length) {
+    console.log(chalk.yellow("No relevant results found."));
+  }
+  for (let i = 0; i < data.results.length; i++) {
+    const r = data.results[i];
+    console.log(chalk.bold.blue(`${i + 1}. ${r.title}`));
+    const meta = [r.source, r.relevance.toFixed(2), r.published_date].filter(Boolean).join(" · ");
+    console.log(chalk.dim(`${r.link} · ${meta}`));
+    console.log(r.snippet);
+    console.log();
+  }
+  for (const error of data.errors) {
+    console.log(chalk.yellow(`${error.source} failed: ${error.message}`));
   }
 }
 
