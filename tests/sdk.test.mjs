@@ -68,6 +68,24 @@ test("SDK helpers use stable endpoints and defaults", async () => {
   }
 });
 
+test("search and news preserve nested metadata and top-level dates", async () => {
+  const response = {
+    results: [{
+      title: "Thread",
+      link: "https://example.com/thread",
+      snippet: "Discussion",
+      published_date: "2026-10-12",
+      metadata: { num_comments: 0 },
+    }],
+  };
+  for (const run of [() => search("q"), () => news("q")]) {
+    const { result } = await captureRequest(run, response);
+    assert.deepEqual(result, response);
+    assert.equal(result.results[0].metadata.num_comments, 0);
+    assert.equal("num_comments" in result.results[0], false);
+  }
+});
+
 test("an explicit SDK API key overrides shared CLI credentials", async () => {
   const { captured } = await captureRequest(
     () => crawl("https://example.com", { apiKey: "plugin-key" }),
