@@ -127,7 +127,11 @@ function escapeHtml(value: string): string {
 }
 
 function respond(res: ServerResponse, status: number, body: string): void {
-  res.writeHead(status, { "Content-Type": "text/html; charset=utf-8" });
+  // The callback server is temporary; a later login may reuse its port.
+  res.writeHead(status, {
+    "Content-Type": "text/html; charset=utf-8",
+    Connection: "close",
+  });
   res.end(body);
 }
 

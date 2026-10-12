@@ -185,6 +185,7 @@ test("runs browser OAuth, PKCE, refresh, retry, and API-key fallback end to end"
     const callbackResponse = await authorizationRequest;
 
     assert.equal(callbackResponse.status, 200);
+    assert.equal(callbackResponse.headers.get("connection"), "close");
     assert.match(await callbackResponse.text(), /Authorization complete/);
     assert.equal(login.oauth.accessToken, "oauth_access_initial");
     assert.equal(login.oauth.refreshToken, "oauth_refresh_123");
