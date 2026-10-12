@@ -135,7 +135,8 @@ s1 search "<query>" [options]
 Search engines: google, bing, bingcn, duckduckgo, yahoo, yandex, x, reddit, github, youtube, arxiv, wechat, bilibili, imdb, wikipedia, grokipedia
 
 Results show `published_date` when the source exposes one; `--json` also
-carries `kind`, `stars`, `language`, and `num_comments` for `github` results.
+carries an optional `metadata` object with `kind`, `stars`, `language`, and
+`num_comments` for `github` results. `published_date` remains at the top level.
 
 ### news
 
@@ -145,7 +146,7 @@ s1 news "<query>" [options]
 
 Same options as search except `--page`. News services: google, bing, duckduckgo, yahoo, hackernews. Default service: bing.
 `hackernews` results link to the discussion thread; with `--json` the article
-is in `story_url`, with `points` and `num_comments`.
+is in `metadata.story_url`, with `metadata.points` and `metadata.num_comments`.
 
 When user asks for breaking/latest news, always add `-t day`.
 

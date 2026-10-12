@@ -54,6 +54,19 @@ export interface NewsOptions extends RequestOptions {
   timeRange?: TimeRange;
 }
 
+export interface SearchResultMetadata {
+  /** GitHub: result type, repository stars/language, or thread comments. */
+  kind?: "repo" | "issue" | "pr" | "discussion";
+  stars?: number;
+  language?: string;
+  /** GitHub threads and Hacker News news results. */
+  num_comments?: number;
+  /** Hacker News: votes and submitted article URL; link is the discussion. */
+  points?: number;
+  story_url?: string;
+  [key: string]: unknown;
+}
+
 export interface SearchResult {
   title: string;
   link: string;
@@ -61,15 +74,7 @@ export interface SearchResult {
   content?: string;
   /** ISO 8601, when the source exposes a date. */
   published_date?: string;
-  /** `github` results. */
-  kind?: "repo" | "issue" | "pr" | "discussion";
-  stars?: number;
-  language?: string;
-  /** `github` threads and `hackernews` news results. */
-  num_comments?: number;
-  /** `hackernews` news results; `link` is the discussion thread. */
-  points?: number;
-  story_url?: string;
+  metadata?: SearchResultMetadata;
 }
 
 export interface SearchResponse {
