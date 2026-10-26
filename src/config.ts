@@ -15,6 +15,10 @@ const CONFIG_FILE = join(CONFIG_DIR, "config.json");
 
 export const API_BASE =
   process.env.SEARCH1API_API_BASE ?? "https://api.search1api.com";
+// Agentback project public key for `s1 feedback`. It can only submit feedback,
+// so it ships with the CLI like any other public client key.
+export const AGENTBACK_PROJECT_KEY =
+  "af_97385a84ecf95968db2403eb6ef165ddcd8ee6716c1b2ceb72f1a35a69e52b8e";
 export const API_RESOURCE_METADATA =
   process.env.SEARCH1API_OAUTH_RESOURCE_METADATA ??
   `${API_BASE}/.well-known/oauth-protected-resource`;
