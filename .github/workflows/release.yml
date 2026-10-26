@@ -1,9 +1,14 @@
 name: Release
 
+# Run this workflow on master (workflow_dispatch) to release the version in
+# package.json: it creates the v<version> tag and GitHub Release with the
+# binaries, then publishes to npm. Pushing a v<version> tag still works too.
+# Steps skip what is already published, so a re-run only fills in the rest.
 on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 jobs:
   verify:
@@ -18,7 +23,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm audit --audit-level=high
+      - name: Release only from master
+        if: github.event_name == 'workflow_dispatch'
+        run: test "$GITHUB_REF" = refs/heads/master
       - name: Verify release tag
+        if: github.event_name == 'push'
         env:
           RELEASE_TAG: ${{ github.ref_name }}
         run: >-
@@ -50,12 +59,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if gh release view "${{ github.ref_name }}" >/dev/null 2>&1; then
-            gh release upload "${{ github.ref_name }}" dist-bin/* --clobber
+          TAG="v$(node -p "require('./package.json').version")"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist-bin/* --clobber
           else
-            gh release create "${{ github.ref_name }}" \
+            gh release create "$TAG" \
               dist-bin/* \
-              --title "${{ github.ref_name }}" \
+              --target "$GITHUB_SHA" \
+              --title "$TAG" \
               --generate-notes
           fi
 
