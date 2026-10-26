@@ -1,6 +1,6 @@
 {
   "name": "search1api-cli",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "CLI tool for Search1API - web search, news, crawl, sitemap, and trending",
   "type": "module",
   "exports": {
@@ -53,6 +53,7 @@
     "scripts"
   ],
   "dependencies": {
+    "agentback": "^0.2.0",
     "chalk": "^5.4.1",
     "commander": "^13.1.0",
     "update-notifier": "^7.3.1"

@@ -38,6 +38,7 @@ import { registerConfigCommand } from "./commands/config.js";
 import { registerUsageCommand } from "./commands/usage.js";
 import { registerLoginCommand } from "./commands/login.js";
 import { registerUpdateCommand } from "./commands/update.js";
+import { registerFeedbackCommand } from "./commands/feedback.js";
 
 const program = new Command();
 
@@ -57,6 +58,7 @@ registerUsageCommand(program);
 registerLoginCommand(program);
 registerConfigCommand(program);
 registerUpdateCommand(program, { pkg, isBinary });
+registerFeedbackCommand(program);
 
 if (process.argv.length <= 2) {
   console.log(`
@@ -71,6 +73,7 @@ if (process.argv.length <= 2) {
     ${chalk.blue("s1 learn")} ${chalk.dim("<url>")}               Turn a URL into an Agent Skill
     ${chalk.blue("s1 trending")} ${chalk.dim("<service>")}         Trending on GitHub / HackerNews
     ${chalk.blue("s1 balance")}                    Check remaining credits
+    ${chalk.blue("s1 feedback")} ${chalk.dim('"message"')}         Report a problem to the Search1API team
 
   ${chalk.bold("Setup:")}
     ${chalk.blue("s1 login")}                      Authorize with OAuth in your browser

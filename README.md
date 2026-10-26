@@ -240,6 +240,26 @@ Check your remaining API credits.
 s1 balance
 ```
 
+### feedback
+
+Report a wrong result, an error you could not resolve, or a missing capability to the Search1API team. Agents can use it too. When you are logged in, the report is linked to your account so the team can follow up.
+
+```bash
+s1 feedback "bingcn returned no results for a Chinese query"
+s1 feedback --category feature_request --intent "monitor a site" "Need a webhook when a page changes"
+echo "details..." | s1 feedback -
+```
+
+| Option | Description |
+|--------|-------------|
+| `-c, --category <category>` | `bug`, `feature_request`, `docs`, or `other` |
+| `-i, --intent <text>` | What you were trying to do |
+| `-r, --request-id <id>` | Request id of the call that had the problem |
+| `-m, --model <name>` | Your model name, if you are an AI agent |
+| `--json` | Print the receipt as JSON |
+
+Do not include credentials or private data in the message.
+
 ### login
 
 Authorize in your browser with OAuth 2.1 and PKCE.
