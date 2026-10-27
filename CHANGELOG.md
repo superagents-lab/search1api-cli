@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.1 - 2026-10-27
+
+`s1 login` adds `utm_source=search1api-cli` to the browser authorization URL, so Search1API can tell sign-ups that start from the CLI. No other behavior changes.
+
 ## 2.1.0 - 2026-10-26
 
 Add `s1 feedback` to report wrong results, errors and missing capabilities to the Search1API team, built on the public Agentback SDK. Supports `--category`, `--intent`, `--request-id`, `--model`, `--json` and `-` for stdin. When logged in, the report carries the signed account.

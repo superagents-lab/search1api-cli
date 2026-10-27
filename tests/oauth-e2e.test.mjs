@@ -214,6 +214,7 @@ test("runs browser OAuth, PKCE, refresh, retry, and API-key fallback end to end"
       /^http:\/\/127\.0\.0\.1:\d+\/callback$/
     );
     assert.equal(fixture.calls.authorization[0].code_challenge_method, "S256");
+    assert.equal(fixture.calls.authorization[0].utm_source, "search1api-cli");
     assert.equal(fixture.calls.codeExchange.length, 1);
     assert.equal(
       fixture.calls.codeExchange[0].redirect_uri,
