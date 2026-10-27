@@ -15,6 +15,8 @@ import {
 const CALLBACK_PATH = "/callback";
 const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
 const OAUTH_SCOPES = "openid profile email offline_access";
+// Names the CLI as the source of sign-ups that start from `s1 login`.
+const OAUTH_SOURCE = "search1api-cli";
 const EXPIRY_SKEW_MS = 60_000;
 
 const SUCCESS_HTML = `<!doctype html>
@@ -306,6 +308,7 @@ function buildAuthorizationUrl(
   url.searchParams.set("state", state);
   url.searchParams.set("code_challenge", codeChallenge);
   url.searchParams.set("code_challenge_method", "S256");
+  url.searchParams.set("utm_source", OAUTH_SOURCE);
   return url.toString();
 }
 
