@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
@@ -39,4 +42,16 @@ test("exposes ask and the new search options", () => {
   assert.match(searchHelp.stdout, /--page <number>/);
   assert.match(searchHelp.stdout, /grokipedia/);
   assert.match(searchHelp.stdout, /day, week, month, year/);
+});
+
+test("points agents at s1 feedback when a command fails", () => {
+  const configDir = mkdtempSync(join(tmpdir(), "s1-config-"));
+  const { SEARCH1API_KEY: _key, ...env } = process.env;
+  const result = spawnSync(process.execPath, [cliPath, "search", "hello"], {
+    encoding: "utf8",
+    env: { ...env, NO_UPDATE_NOTIFIER: "1", SEARCH1API_CONFIG_DIR: configDir },
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /^Error: /);
+  assert.match(result.stderr, /s1 feedback "<what happened>"/);
 });
