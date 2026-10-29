@@ -3,6 +3,7 @@
 import updateNotifier from "update-notifier";
 import chalk from "chalk";
 import { Command } from "commander";
+import { feedbackHint } from "agentback/cli";
 import { registerSearchCommand } from "./commands/search.js";
 
 declare const __PKG_VERSION__: string | undefined;
@@ -85,6 +86,8 @@ if (process.argv.length <= 2) {
 } else {
   program.parseAsync().catch((err: Error) => {
     console.error(`Error: ${err.message}`);
+    // Agents read stderr; point them at `s1 feedback` for problems worth reporting.
+    if (program.args[0] !== "feedback") console.error(feedbackHint("s1"));
     process.exit(1);
   });
 }

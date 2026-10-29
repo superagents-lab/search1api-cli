@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.2 - 2026-10-29
+
+When a command fails, `s1` prints a one-line hint under the error pointing to `s1 feedback`, so agents know they can report the problem. Updates the Agentback SDK to 0.3.0. No other behavior changes.
+
 ## 2.1.1 - 2026-10-27
 
 `s1 login` adds `utm_source=search1api-cli` to the browser authorization URL, so Search1API can tell sign-ups that start from the CLI. No other behavior changes.
