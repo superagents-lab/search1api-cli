@@ -135,6 +135,51 @@ export interface AskResponse {
   errors: Array<{ source: string; message: string }>;
 }
 
+export interface MapsLocation {
+  latitude: number;
+  longitude: number;
+  /** Map zoom, 3-30. The API defaults to 14. */
+  zoom?: number;
+}
+
+export interface MapsOptions extends RequestOptions {
+  /** Two-letter country code. The API defaults to `us`. */
+  country?: string;
+  /** Result language such as `en` or `zh-CN`. The API defaults to `en`. */
+  language?: string;
+  /** Search around this point. Required for page 2 and later. */
+  location?: MapsLocation;
+  /** Google Maps page, 1-6. Each page is billed separately. */
+  page?: number;
+  /** Places to return from the page, 1-20. Fewer places do not lower the price. */
+  maxResults?: number;
+}
+
+export interface MapsPlace {
+  position: number;
+  name: string;
+  place_id: string;
+  maps_url: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  thumbnail?: string;
+  category?: string;
+  categories?: string[];
+  rating?: number;
+  review_count?: number;
+  coordinates?: { latitude: number; longitude: number };
+  opening_hours?: Partial<Record<string, string>>;
+  open_state?: string;
+  price?: string;
+  description?: string;
+}
+
+export interface MapsResponse {
+  searchParameters: Record<string, unknown>;
+  results: MapsPlace[];
+}
+
 export interface TrendingOptions extends RequestOptions {
   maxResults?: number;
 }
@@ -188,6 +233,23 @@ export async function ask(
   options: RequestOptions = {}
 ): Promise<AskResponse> {
   return request<AskResponse>("/ask", { query }, options);
+}
+
+/**
+ * Google Maps place search: one page of up to 20 businesses and places.
+ * 3 credits per completed page.
+ */
+export async function maps(
+  query: string,
+  options: MapsOptions = {}
+): Promise<MapsResponse> {
+  const body: Record<string, unknown> = { query };
+  if (options.country) body.country = options.country;
+  if (options.language) body.language = options.language;
+  if (options.location) body.location = options.location;
+  if (options.page !== undefined) body.page = options.page;
+  if (options.maxResults !== undefined) body.max_results = options.maxResults;
+  return request<MapsResponse>("/maps", body, options);
 }
 
 export async function crawl(

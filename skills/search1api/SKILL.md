@@ -1,7 +1,7 @@
 ---
 name: search1api
 description: >
-  Live web search, agentic search, page retrieval, news, sitemap discovery, trending topics, and turning a URL into a reusable Agent Skill — all through the Search1API CLI (`s1`). Use this skill whenever the user wants to search the web, look something up, research a topic, read or summarize a URL, check current news, explore a site's links, see trending topics, check API balance, or teach an agent a URL so it can be used later. Trigger on phrases like "search for", "look up", "find out about", "what's happening with", "any news on", "what does this link say", "read this page", "summarize this URL", "trending on GitHub", "learn this URL", "learn this site", "turn these docs into a skill", "记住这个链接", "学会这个文档", or when the user shares a bare URL.
+  Live web search, agentic search, Google Maps place search, page retrieval, news, sitemap discovery, trending topics, and turning a URL into a reusable Agent Skill — all through the Search1API CLI (`s1`). Use this skill whenever the user wants to search the web, look something up, research a topic, read or summarize a URL, check current news, find businesses or places on a map, explore a site's links, see trending topics, check API balance, or teach an agent a URL so it can be used later. Trigger on phrases like "search for", "look up", "find out about", "what's happening with", "any news on", "coffee shops near", "restaurants in", "what does this link say", "read this page", "summarize this URL", "trending on GitHub", "learn this URL", "learn this site", "turn these docs into a skill", "记住这个链接", "学会这个文档", or when the user shares a bare URL.
 ---
 
 # Search1API
@@ -70,6 +70,7 @@ error.
 | Asks a question that spans sources, unsure where to look | `s1 ask "<question>"` |
 | Wants the full page behind a search result | `s1 crawl <url>` |
 | Wants news | `s1 news "<query>"` |
+| Wants businesses or places on a map (where is, nearby, a list of shops) | `s1 maps "<what>"` |
 | Wants to explore a site's links | `s1 sitemap <url>` |
 | Wants trending topics | `s1 trending <service>` |
 | Wants to check remaining credits | `s1 balance` |
@@ -161,6 +162,19 @@ Reddit, GitHub, X, arXiv, Wikipedia, and more) and a time window from phrases
 like "this week", and returns at most 10 relevant results with their source
 engine and relevance score. The first line of the output shows which engines and
 window were used. Costs 5 credits per completed request.
+
+### maps
+
+```bash
+s1 maps "<what to find>" [-n 1-20] [--near <lat,lng>] [--zoom 3-30] [-p 1-6] [--country <cc>] [-l <language>] [--json]
+```
+
+Finds businesses and places on Google Maps: name, category, rating, address,
+phone, website, open state, and a Google Maps link. Put the area in the query
+("ramen in Shibuya") or pass `--near` for a point; page 2 and later need
+`--near`. Costs 3 credits per page of up to 20 places, however many you show,
+so don't page further than the user needs. `crawl` a place's website for more
+detail.
 
 ### crawl
 

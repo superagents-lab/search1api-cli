@@ -4,7 +4,7 @@ import test from "node:test";
 process.env.SEARCH1API_KEY = "test-key";
 process.env.SEARCH1API_API_BASE = "https://api.example.test";
 
-const { ask, crawl, news, search, sitemap, trending } = await import("../dist/sdk.js");
+const { ask, crawl, maps, news, search, sitemap, trending } = await import("../dist/sdk.js");
 
 async function captureRequest(run, response) {
   const originalFetch = globalThis.fetch;
@@ -130,4 +130,30 @@ test("ask sends only the query to /ask", async () => {
   assert.deepEqual(JSON.parse(captured.init.body), {
     query: "recent papers on speculative decoding",
   });
+});
+
+test("maps sends only the options that were set to /maps", async () => {
+  const response = { searchParameters: { query: "coffee shops" }, results: [] };
+  const { captured, result } = await captureRequest(
+    () =>
+      maps("coffee shops", {
+        location: { latitude: 40.7455, longitude: -74.0083, zoom: 15 },
+        page: 2,
+        maxResults: 5,
+        country: "us",
+      }),
+    response
+  );
+  assert.deepEqual(result, response);
+  assert.equal(captured.input, "https://api.example.test/maps");
+  assert.deepEqual(JSON.parse(captured.init.body), {
+    query: "coffee shops",
+    country: "us",
+    location: { latitude: 40.7455, longitude: -74.0083, zoom: 15 },
+    page: 2,
+    max_results: 5,
+  });
+
+  const minimal = await captureRequest(() => maps("ramen in Shibuya"), response);
+  assert.deepEqual(JSON.parse(minimal.captured.init.body), { query: "ramen in Shibuya" });
 });
