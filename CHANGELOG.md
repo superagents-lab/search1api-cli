@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.0 - 2026-11-03
+
+Adds `s1 maps "<query>"` and a `maps()` SDK helper for `POST /maps`: one Google Maps page of up to 20 places with category, rating, address, phone, website, open state and Maps link. Options: `-n/--max-results`, `--near <lat,lng>`, `--zoom`, `-p/--page` (page 2+ needs `--near`), `--country`, `-l/--lang`, `--json`. 3 credits per completed page. The agent skill routes "where is / nearby / list of businesses" requests to it.
+
 ## 2.1.2 - 2026-10-29
 
 When a command fails, `s1` prints a one-line hint under the error pointing to `s1 feedback`, so agents know they can report the problem. Updates the Agentback SDK to 0.3.0. No other behavior changes.

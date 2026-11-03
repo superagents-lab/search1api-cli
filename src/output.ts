@@ -71,6 +71,42 @@ export function printAskResults(data: AskResponse): void {
   }
 }
 
+interface MapsPlace {
+  name: string;
+  maps_url: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  category?: string;
+  rating?: number;
+  review_count?: number;
+  open_state?: string;
+  price?: string;
+}
+
+export function printMapsResults(results: MapsPlace[]): void {
+  if (!results.length) {
+    console.log(chalk.yellow("No places found."));
+    return;
+  }
+
+  for (let i = 0; i < results.length; i++) {
+    const p = results[i];
+    console.log(chalk.bold.blue(`${i + 1}. ${p.name}`));
+    const rating =
+      p.rating !== undefined
+        ? `${p.rating}★${p.review_count !== undefined ? ` (${p.review_count})` : ""}`
+        : undefined;
+    const summary = [p.category, rating, p.price, p.open_state].filter(Boolean).join(" · ");
+    if (summary) console.log(summary);
+    if (p.address) console.log(p.address);
+    const contact = [p.phone, p.website].filter(Boolean).join(" · ");
+    if (contact) console.log(contact);
+    console.log(chalk.dim(p.maps_url));
+    console.log();
+  }
+}
+
 export function printTrendingResults(results: TrendingResult[]): void {
   if (!results.length) {
     console.log(chalk.yellow("No trending results."));

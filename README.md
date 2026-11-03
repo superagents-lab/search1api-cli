@@ -96,6 +96,27 @@ s1 ask "recent papers on speculative decoding" --json
 
 Use `search` when you already know which engine and keywords you want.
 
+### maps
+
+Find businesses and places on Google Maps. Each place shows its category,
+rating, address, phone, website, open state, and Google Maps link. Each
+completed page of up to 20 places costs 3 credits.
+
+```bash
+s1 maps "ramen in Shibuya"
+s1 maps "coffee shops" --near 40.7455,-74.0083 --zoom 15 -n 5
+s1 maps "coffee shops" --near 40.7455,-74.0083 --page 2 --json
+```
+
+| Option | Description |
+|---|---|
+| `-n, --max-results` | Places to return from the page (1-20); fewer places do not lower the price |
+| `--near <lat,lng>` | Search around a point; required for page 2 and later |
+| `--zoom` | Map zoom with `--near` (3-30, default 14) |
+| `-p, --page` | Google Maps page (1-6); each page is billed separately |
+| `--country` | Two-letter country code (default `us`) |
+| `-l, --lang` | Result language such as `en`, `de`, `zh-CN` (default `en`) |
+
 ### news
 
 Search for news articles.

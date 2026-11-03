@@ -44,6 +44,23 @@ test("exposes ask and the new search options", () => {
   assert.match(searchHelp.stdout, /day, week, month, year/);
 });
 
+test("exposes maps with location options", () => {
+  const help = runCli("--help");
+  assert.equal(help.status, 0, help.stderr);
+  assert.match(help.stdout, /maps \[options\] <query>/);
+
+  const mapsHelp = runCli("maps", "--help");
+  assert.equal(mapsHelp.status, 0, mapsHelp.stderr);
+  assert.match(mapsHelp.stdout, /--near <lat,lng>/);
+  assert.match(mapsHelp.stdout, /--page <number>/);
+});
+
+test("maps rejects a malformed --near before calling the API", () => {
+  const result = runCli("maps", "coffee", "--near", "40.7");
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /--near must be "latitude,longitude"/);
+});
+
 test("points agents at s1 feedback when a command fails", () => {
   const configDir = mkdtempSync(join(tmpdir(), "s1-config-"));
   const { SEARCH1API_KEY: _key, ...env } = process.env;
