@@ -146,6 +146,41 @@ Extract content from a URL.
 s1 crawl https://example.com/article
 ```
 
+### deepcrawl
+
+Crawl a whole site, or one section of it, in a single task and get every page
+as Markdown. Each task costs 20 credits, however many pages it crawls. The
+command starts the task, waits for it (usually 10-20 seconds for 20 pages,
+longer for big sites), then lists each page with its title, URL and length.
+
+```bash
+s1 deepcrawl https://hono.dev/docs/ -n 20 --include /docs --exclude /docs/changelog
+s1 deepcrawl https://example.com --type all -o pages.json   # save every page's Markdown
+s1 deepcrawl https://example.com --format zip -o site.zip   # one Markdown file per page
+s1 deepcrawl https://example.com --no-wait                  # print the task id and exit
+s1 deepcrawl status <taskId>                                # check it later (free)
+s1 deepcrawl status <taskId> -o pages.json --json
+```
+
+| Option | Description | Default |
+|---|---|---|
+| `--type <type>` | `sitemap` reads the site's sitemap.xml; `all` follows the links on the page | `sitemap` |
+| `-n, --max-pages <number>` | Pages to crawl (1-1000), taken after the path rules in discovery order | 1000 |
+| `--include <path>` | Only crawl URL paths matching this rule; repeat for more (up to 20) | |
+| `--exclude <path>` | Skip URL paths matching this rule; repeat for more (up to 20); wins over `--include` | |
+| `--format <format>` | `json` returns the pages inline; `zip` packs them as Markdown files behind a download URL | `json` |
+| `--no-wait` | Start the task, print its id and exit | |
+| `--timeout <seconds>` | How long to wait for the result; the task keeps running after that | 300 |
+| `-o, --output <file>` | Save the result: `{ pages, failed }` as JSON, or the ZIP | |
+| `--json` | Output the raw status response | |
+
+Path rules match the URL path. A rule without `*` is a prefix on segment
+boundaries: `/docs` matches `/docs` and `/docs/api`, not `/docsearch`. A rule
+with `*` must match the whole path, and `*` also matches `/`, e.g. `/blog/*`.
+
+`s1 deepcrawl status <taskId>` takes `-o` and `--json` too. When a large JSON
+result is not returned inline, `-o` downloads it from the result URL.
+
 ### sitemap
 
 Get related links from a website.

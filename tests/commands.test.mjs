@@ -61,6 +61,25 @@ test("maps rejects a malformed --near before calling the API", () => {
   assert.match(result.stderr, /--near must be "latitude,longitude"/);
 });
 
+test("exposes deepcrawl with its status subcommand", () => {
+  const help = runCli("--help");
+  assert.equal(help.status, 0, help.stderr);
+  assert.match(help.stdout, /deepcrawl \[options\] <url>/);
+
+  const deepcrawlHelp = runCli("deepcrawl", "--help");
+  assert.equal(deepcrawlHelp.status, 0, deepcrawlHelp.stderr);
+  assert.match(deepcrawlHelp.stdout, /20 credits per\s+task/);
+  for (const flag of ["--type <type>", "--max-pages <number>", "--include <path>", "--exclude <path>",
+    "--format <format>", "--no-wait", "--timeout <seconds>", "--output <file>", "--json"]) {
+    assert.ok(deepcrawlHelp.stdout.includes(flag), `missing ${flag}`);
+  }
+  assert.match(deepcrawlHelp.stdout, /status \[options\] <taskId>/);
+
+  const statusHelp = runCli("deepcrawl", "status", "--help");
+  assert.equal(statusHelp.status, 0, statusHelp.stderr);
+  assert.match(statusHelp.stdout, /--output <file>/);
+});
+
 test("points agents at s1 feedback when a command fails", () => {
   const configDir = mkdtempSync(join(tmpdir(), "s1-config-"));
   const { SEARCH1API_KEY: _key, ...env } = process.env;

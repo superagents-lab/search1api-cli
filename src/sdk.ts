@@ -1,4 +1,4 @@
-import { request } from "./api.js";
+import { request, send } from "./api.js";
 
 export type TimeRange = "day" | "week" | "month" | "year";
 
@@ -180,6 +180,71 @@ export interface MapsResponse {
   results: MapsPlace[];
 }
 
+export type DeepcrawlFormat = "zip" | "json";
+
+export interface DeepcrawlOptions extends RequestOptions {
+  /** `sitemap` (the API default) reads sitemap.xml; `all` follows the links found on the page. */
+  type?: SitemapType;
+  /** Pages to crawl, 1-1000. The API defaults to 1000. */
+  maxPages?: number;
+  /**
+   * Only crawl URLs whose path matches one of these rules (up to 20). Without
+   * `*` a rule is a path prefix on segment boundaries (`/docs` matches
+   * `/docs/api`, not `/docsearch`); with `*` it must match the whole path.
+   */
+  includePaths?: string[];
+  /** Skip URLs whose path matches one of these rules (up to 20). Exclusion wins. */
+  excludePaths?: string[];
+  /** `zip` (the API default) or `json`, which returns the pages in the status response. */
+  format?: DeepcrawlFormat;
+}
+
+export interface DeepcrawlTask {
+  taskId: string;
+  status: "queued";
+}
+
+export type DeepcrawlState =
+  | "queued"
+  | "waiting"
+  | "processing"
+  | "completed"
+  | "failed"
+  | "not_found";
+
+export interface DeepcrawlStats {
+  discovered: number;
+  matched: number;
+  /** Matched pages left out by max_pages. */
+  skipped: number;
+  crawled: number;
+  failed: number;
+}
+
+export interface DeepcrawlPage {
+  url: string;
+  title: string | null;
+  /** Page body as Markdown. */
+  content: string;
+}
+
+export interface DeepcrawlStatusResponse {
+  taskId: string;
+  status?: DeepcrawlState;
+  message?: string;
+  error?: string | null;
+  format?: DeepcrawlFormat;
+  stats?: DeepcrawlStats;
+  failed?: Array<{ url: string; error: string }>;
+  /** format=zip: the Markdown files as one ZIP. */
+  zipUrl?: string | null;
+  /** format=json: the JSON result file, `{ pages, failed }`. */
+  resultUrl?: string | null;
+  /** format=json: the pages inline; omitted when the result is over 5 MB. */
+  pages?: DeepcrawlPage[];
+  [key: string]: unknown;
+}
+
 export interface TrendingOptions extends RequestOptions {
   maxResults?: number;
 }
@@ -282,6 +347,53 @@ export async function crawlBatch(
     urls.map((url) => ({ url })),
     options
   );
+}
+
+/**
+ * Start a whole-site crawl. Returns a task id right away; poll
+ * `deepcrawlStatus` until it reports `completed` or `failed`.
+ * 20 credits per task, however many pages it crawls.
+ */
+export async function deepcrawl(
+  url: string,
+  options: DeepcrawlOptions = {}
+): Promise<DeepcrawlTask> {
+  const body: Record<string, unknown> = { url };
+  if (options.type) body.type = options.type;
+  if (options.maxPages !== undefined) body.max_pages = options.maxPages;
+  if (options.includePaths?.length) body.include_paths = options.includePaths;
+  if (options.excludePaths?.length) body.exclude_paths = options.excludePaths;
+  if (options.format) body.format = options.format;
+  return request<DeepcrawlTask>("/deepcrawl", body, options);
+}
+
+/**
+ * Check a deepcrawl task. Free. A task that failed is returned with
+ * `status: "failed"` rather than thrown; an unknown task id throws.
+ */
+export async function deepcrawlStatus(
+  taskId: string,
+  options: RequestOptions = {}
+): Promise<DeepcrawlStatusResponse> {
+  const res = await send(
+    `/deepcrawl/status/${encodeURIComponent(taskId)}`,
+    { method: "GET" },
+    options
+  );
+  const text = await res.text();
+  if (res.ok) return JSON.parse(text) as DeepcrawlStatusResponse;
+
+  // A failed task comes back as a 500 that still describes the task.
+  let body: Partial<DeepcrawlStatusResponse> | undefined;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    body = undefined;
+  }
+  if (body?.taskId && body.status === "failed") {
+    return body as DeepcrawlStatusResponse;
+  }
+  throw new Error(`API error (${res.status}): ${text}`);
 }
 
 export async function trending(
