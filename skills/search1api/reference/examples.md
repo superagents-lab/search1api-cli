@@ -112,6 +112,22 @@ s1 search "test" --json
 s1 balance --json
 ```
 
+## Crawling a whole site
+
+Check which URLs the site lists, then crawl one section in a single task
+(20 credits) and save every page's Markdown:
+
+```bash
+s1 sitemap https://hono.dev/docs/
+s1 deepcrawl https://hono.dev/docs/ -n 50 --include /docs/api --exclude /docs/api/presets -o hono-api.json
+```
+
+If the wait times out, check the same task instead of starting another:
+
+```bash
+s1 deepcrawl status <taskId> -o hono-api.json
+```
+
 ## Learning a URL into a skill
 
 One page, staged but not installed:

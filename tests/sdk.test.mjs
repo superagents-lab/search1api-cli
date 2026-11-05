@@ -4,15 +4,17 @@ import test from "node:test";
 process.env.SEARCH1API_KEY = "test-key";
 process.env.SEARCH1API_API_BASE = "https://api.example.test";
 
-const { ask, crawl, maps, news, search, sitemap, trending } = await import("../dist/sdk.js");
+const { ask, crawl, deepcrawl, deepcrawlStatus, maps, news, search, sitemap, trending } = await import(
+  "../dist/sdk.js"
+);
 
-async function captureRequest(run, response) {
+async function captureRequest(run, response, status = 200) {
   const originalFetch = globalThis.fetch;
   let captured;
   globalThis.fetch = async (input, init) => {
     captured = { input: String(input), init };
     return new Response(JSON.stringify(response), {
-      status: 200,
+      status,
       headers: { "Content-Type": "application/json" },
     });
   };
@@ -156,4 +158,65 @@ test("maps sends only the options that were set to /maps", async () => {
 
   const minimal = await captureRequest(() => maps("ramen in Shibuya"), response);
   assert.deepEqual(JSON.parse(minimal.captured.init.body), { query: "ramen in Shibuya" });
+});
+
+test("deepcrawl sends only the options that were set to /deepcrawl", async () => {
+  const response = { taskId: "task-1", status: "queued" };
+  const { captured, result } = await captureRequest(
+    () =>
+      deepcrawl("https://hono.dev/docs/", {
+        type: "all",
+        maxPages: 20,
+        includePaths: ["/docs"],
+        excludePaths: ["/docs/changelog"],
+        format: "json",
+      }),
+    response,
+    202
+  );
+  assert.deepEqual(result, response);
+  assert.equal(captured.input, "https://api.example.test/deepcrawl");
+  assert.equal(captured.init.method, "POST");
+  assert.deepEqual(JSON.parse(captured.init.body), {
+    url: "https://hono.dev/docs/",
+    type: "all",
+    max_pages: 20,
+    include_paths: ["/docs"],
+    exclude_paths: ["/docs/changelog"],
+    format: "json",
+  });
+
+  const minimal = await captureRequest(
+    () => deepcrawl("https://example.com", { includePaths: [] }),
+    response,
+    202
+  );
+  assert.deepEqual(JSON.parse(minimal.captured.init.body), { url: "https://example.com" });
+});
+
+test("deepcrawlStatus GETs the task and returns a failed task instead of throwing", async () => {
+  const completed = { taskId: "a/b", status: "completed", format: "json", pages: [] };
+  const { captured, result } = await captureRequest(() => deepcrawlStatus("a/b"), completed);
+  assert.deepEqual(result, completed);
+  assert.equal(captured.input, "https://api.example.test/deepcrawl/status/a%2Fb");
+  assert.equal(captured.init.method, "GET");
+  assert.equal(captured.init.body, undefined);
+  assert.equal(new Headers(captured.init.headers).get("Authorization"), "Bearer test-key");
+
+  const failed = { taskId: "t", status: "failed", message: "Workflow errored.", error: "boom" };
+  const failure = await captureRequest(() => deepcrawlStatus("t"), failed, 500);
+  assert.deepEqual(failure.result, failed);
+
+  await assert.rejects(
+    captureRequest(
+      () => deepcrawlStatus("missing"),
+      { taskId: "missing", status: "not_found", message: "Task not found: missing" },
+      404
+    ),
+    /API error \(404\): .*Task not found: missing/
+  );
+  await assert.rejects(
+    captureRequest(() => deepcrawlStatus("t"), { error: "Upstream failed" }, 502),
+    /API error \(502\)/
+  );
 });

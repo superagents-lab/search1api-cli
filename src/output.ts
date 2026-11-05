@@ -140,6 +140,58 @@ export function printSitemapLinks(links: string[]): void {
   console.log(chalk.dim(`\nTotal: ${links.length} links`));
 }
 
+interface DeepcrawlResult {
+  taskId: string;
+  message?: string;
+  stats?: { discovered: number; matched: number; skipped: number; crawled: number; failed: number };
+  failed?: Array<{ url: string; error: string }>;
+  zipUrl?: string | null;
+  resultUrl?: string | null;
+  pages?: Array<{ url: string; title: string | null; content: string }>;
+}
+
+export function printDeepcrawlResult(result: DeepcrawlResult, savedTo?: string): void {
+  if (result.message) console.log(result.message);
+  const { stats } = result;
+  if (stats) {
+    console.log(
+      chalk.dim(
+        `${stats.discovered} discovered · ${stats.matched} matched · ${stats.skipped} over max-pages · ` +
+          `${stats.crawled} crawled · ${stats.failed} failed`
+      )
+    );
+  }
+
+  const pages = result.pages ?? [];
+  if (pages.length) console.log();
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i];
+    const chars = `${page.content.length.toLocaleString("en-US")} chars`;
+    const title = page.title?.trim();
+    console.log(
+      `${chalk.bold.blue(`${i + 1}.`)} ${title ? `${chalk.bold(title)} ` : ""}${chalk.dim(`${page.url} · ${chars}`)}`
+    );
+  }
+
+  const failed = result.failed ?? [];
+  if (failed.length) {
+    console.log();
+    console.log(chalk.yellow(`Failed (${failed.length}):`));
+    for (const item of failed) console.log(chalk.yellow(`  ${item.url} — ${item.error}`));
+  }
+
+  if (result.zipUrl || result.resultUrl || savedTo) console.log();
+  if (result.zipUrl) console.log(`ZIP: ${result.zipUrl}`);
+  if (result.resultUrl) console.log(`Result: ${result.resultUrl}`);
+  if (savedTo) {
+    console.log(chalk.green(savedTo));
+  } else if (pages.length) {
+    console.log(
+      chalk.dim(`Page Markdown: s1 deepcrawl status ${result.taskId} -o pages.json (free)`)
+    );
+  }
+}
+
 export function printJson(data: unknown): void {
   console.log(JSON.stringify(data, null, 2));
 }

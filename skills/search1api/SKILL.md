@@ -1,7 +1,7 @@
 ---
 name: search1api
 description: >
-  Live web search, agentic search, Google Maps place search, page retrieval, news, sitemap discovery, trending topics, and turning a URL into a reusable Agent Skill — all through the Search1API CLI (`s1`). Use this skill whenever the user wants to search the web, look something up, research a topic, read or summarize a URL, check current news, find businesses or places on a map, explore a site's links, see trending topics, check API balance, or teach an agent a URL so it can be used later. Trigger on phrases like "search for", "look up", "find out about", "what's happening with", "any news on", "coffee shops near", "restaurants in", "what does this link say", "read this page", "summarize this URL", "trending on GitHub", "learn this URL", "learn this site", "turn these docs into a skill", "记住这个链接", "学会这个文档", or when the user shares a bare URL.
+  Live web search, agentic search, Google Maps place search, page retrieval, whole-site crawling, news, sitemap discovery, trending topics, and turning a URL into a reusable Agent Skill — all through the Search1API CLI (`s1`). Use this skill whenever the user wants to search the web, look something up, research a topic, read or summarize a URL, pull every page of a site or docs section, check current news, find businesses or places on a map, explore a site's links, see trending topics, check API balance, or teach an agent a URL so it can be used later. Trigger on phrases like "search for", "look up", "find out about", "what's happening with", "any news on", "coffee shops near", "restaurants in", "what does this link say", "read this page", "summarize this URL", "crawl this whole site", "get all the pages under /docs", "trending on GitHub", "learn this URL", "learn this site", "turn these docs into a skill", "记住这个链接", "学会这个文档", or when the user shares a bare URL.
 ---
 
 # Search1API
@@ -69,6 +69,7 @@ error.
 | Wants to search the web | `s1 search "<query>"` |
 | Asks a question that spans sources, unsure where to look | `s1 ask "<question>"` |
 | Wants the full page behind a search result | `s1 crawl <url>` |
+| Wants every page of a site or section as Markdown, now | `s1 deepcrawl <url>` |
 | Wants news | `s1 news "<query>"` |
 | Wants businesses or places on a map (where is, nearby, a list of shops) | `s1 maps "<what>"` |
 | Wants to explore a site's links | `s1 sitemap <url>` |
@@ -82,6 +83,9 @@ These look similar and are not:
 
 - "What does this page say?", "summarize this link", "read these docs and
   answer X" → **`s1 crawl`**. One page, answer now, nothing written to disk.
+- "Crawl this whole site", "get every page under /blog", "export these docs as
+  Markdown" → **`s1 deepcrawl`**. Many pages in one task, returned now or saved
+  to a file; nothing installed.
 - "Learn this URL", "make a skill out of these docs", "记住这个文档" → **`s1 learn`**.
   Produces an installable skill directory the user's agent can load later.
 - **Scope follows the request.** A single link is one page; a documentation set
@@ -183,6 +187,32 @@ s1 crawl <url>
 ```
 
 Extracts clean content from a URL. Use this whenever the user shares a link.
+
+### deepcrawl
+
+```bash
+s1 deepcrawl <url> [--type sitemap|all] [-n 1-1000] [--include <path>]... [--exclude <path>]... [--format json|zip] [-o <file>] [--timeout <s>] [--no-wait] [--json]
+s1 deepcrawl status <taskId> [-o <file>] [--json]
+```
+
+Crawls many pages of one site in a single task. Costs 20 credits per task
+however many pages it crawls, so scope it once instead of re-running: `-n`
+caps the pages (default 1000), `--include`/`--exclude` take URL-path rules and
+can be repeated (up to 20 each). A rule without `*` is a path prefix on segment
+boundaries (`/docs` matches `/docs/api`, not `/docsearch`); with `*` it matches
+the whole path (`/blog/*`); exclude wins. `--type all` follows the page's links
+when the site has no sitemap.
+
+It waits for the task (about 10-20 s for 20 pages, longer for big sites) and
+prints the stats, one line per page (title, URL, length), failed URLs, and the
+result URL. Page Markdown is not printed: save it with `-o pages.json`, which
+writes `{ pages: [{ url, title, content }], failed }`, or read it with `--json`.
+If the wait times out, the task keeps running — run `s1 deepcrawl status
+<taskId>` (free) instead of starting a new task. A completed task that found
+nothing explains why in its message; adjust the path rules or `--type`.
+
+Use `crawl` for one page and `sitemap` to see a site's URLs before choosing
+path rules.
 
 ### sitemap
 

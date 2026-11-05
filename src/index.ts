@@ -33,6 +33,7 @@ import { registerNewsCommand } from "./commands/news.js";
 import { registerAskCommand } from "./commands/ask.js";
 import { registerMapsCommand } from "./commands/maps.js";
 import { registerCrawlCommand } from "./commands/crawl.js";
+import { registerDeepcrawlCommand } from "./commands/deepcrawl.js";
 import { registerSitemapCommand } from "./commands/sitemap.js";
 import { registerLearnCommand } from "./commands/learn.js";
 import { registerTrendingCommand } from "./commands/trending.js";
@@ -46,14 +47,18 @@ const program = new Command();
 
 program
   .name("search1api")
-  .description("CLI for Search1API - search, ask, maps, news, crawl, sitemap, learn & trending")
-  .version(pkg.version);
+  .description("CLI for Search1API - search, ask, maps, news, crawl, deepcrawl, sitemap, learn & trending")
+  .version(pkg.version)
+  // Options after a subcommand belong to it, so `s1 deepcrawl status <id> --json`
+  // reaches `status` rather than `deepcrawl`.
+  .enablePositionalOptions();
 
 registerSearchCommand(program);
 registerNewsCommand(program);
 registerAskCommand(program);
 registerMapsCommand(program);
 registerCrawlCommand(program);
+registerDeepcrawlCommand(program);
 registerSitemapCommand(program);
 registerLearnCommand(program);
 registerTrendingCommand(program);
@@ -74,6 +79,7 @@ if (process.argv.length <= 2) {
     ${chalk.blue("s1 maps")} ${chalk.dim('"coffee shops"')}        Find places on Google Maps
     ${chalk.blue("s1 news")} ${chalk.dim('"your query"')}          Search for news
     ${chalk.blue("s1 crawl")} ${chalk.dim("<url>")}               Extract content from a URL
+    ${chalk.blue("s1 deepcrawl")} ${chalk.dim("<url>")}           Crawl a whole site into Markdown pages
     ${chalk.blue("s1 learn")} ${chalk.dim("<url>")}               Turn a URL into an Agent Skill
     ${chalk.blue("s1 trending")} ${chalk.dim("<service>")}         Trending on GitHub / HackerNews
     ${chalk.blue("s1 balance")}                    Check remaining credits
