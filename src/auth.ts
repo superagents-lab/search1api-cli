@@ -18,6 +18,12 @@ const OAUTH_SCOPES = "openid profile email offline_access";
 // Names the CLI as the source of sign-ups that start from `s1 login`.
 const OAUTH_SOURCE = "search1api-cli";
 const EXPIRY_SKEW_MS = 60_000;
+const DEVICE_CODE_GRANT = "urn:ietf:params:oauth:grant-type:device_code";
+// Public OAuth application (no secret) with Device Authorization Grant enabled.
+// Dynamically registered clients cannot use the device grant, so this one is
+// created once in the Clerk Dashboard and ships with the CLI.
+export const DEVICE_CLIENT_ID =
+  process.env.SEARCH1API_OAUTH_DEVICE_CLIENT_ID ?? "";
 
 const SUCCESS_HTML = `<!doctype html>
 <html>
@@ -51,6 +57,7 @@ type AuthorizationServerMetadata = {
   registration_endpoint?: string | null;
   code_challenge_methods_supported?: string[];
   grant_types_supported?: string[];
+  device_authorization_endpoint?: string | null;
 };
 
 type ClientRegistrationResponse = {
@@ -539,6 +546,137 @@ export async function loginWithBrowser(
       }
     );
   });
+}
+
+type DeviceAuthorizationResponse = {
+  device_code: string;
+  user_code: string;
+  verification_uri: string;
+  verification_uri_complete?: string;
+  expires_in: number;
+  interval?: number;
+};
+
+type OAuthErrorResponse = {
+  error?: string;
+  error_description?: string;
+};
+
+export type DeviceLoginPrompt = {
+  userCode: string;
+  verificationUri: string;
+  verificationUriComplete?: string;
+  expiresInSeconds: number;
+  browserOpened: boolean;
+};
+
+export type DeviceLoginOptions = {
+  openBrowser?: boolean;
+  timeoutMs?: number;
+  clientId?: string;
+  onPrompt?: (prompt: DeviceLoginPrompt) => void;
+  sleep?: (ms: number) => Promise<void>;
+};
+
+const defaultSleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/**
+ * OAuth 2.0 Device Authorization Grant (RFC 8628): show a short code, let the
+ * user approve it in a browser on any device, and poll for tokens.
+ */
+export async function loginWithDeviceCode(
+  options: DeviceLoginOptions = {}
+): Promise<OAuthConfig> {
+  const clientId = options.clientId ?? DEVICE_CLIENT_ID;
+  if (!clientId) {
+    throw new Error(
+      "Device login is not configured yet. Use `s1 login` or `s1 config set-key <key>`."
+    );
+  }
+  const sleep = options.sleep ?? defaultSleep;
+  const metadata = await discoverAuthorizationServer();
+  if (!metadata.device_authorization_endpoint) {
+    throw new Error("The authorization server does not support device login.");
+  }
+
+  const device = await readJson<DeviceAuthorizationResponse>(
+    await fetch(metadata.device_authorization_endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: clientId,
+        scope: OAUTH_SCOPES,
+      }),
+    }),
+    "Device authorization"
+  );
+  if (!(device.device_code && device.user_code && device.verification_uri)) {
+    throw new Error("Device authorization response is missing required fields.");
+  }
+
+  const browserUrl = device.verification_uri_complete ?? device.verification_uri;
+  const browserOpened =
+    options.openBrowser === true ? openBrowser(browserUrl) : false;
+  options.onPrompt?.({
+    userCode: device.user_code,
+    verificationUri: device.verification_uri,
+    verificationUriComplete: device.verification_uri_complete,
+    expiresInSeconds: device.expires_in,
+    browserOpened,
+  });
+
+  const expiresMs = (device.expires_in ?? 600) * 1000;
+  const deadline =
+    Date.now() + Math.min(expiresMs, options.timeoutMs ?? expiresMs);
+  let intervalMs = Math.max(1, device.interval ?? 5) * 1000;
+
+  while (Date.now() < deadline) {
+    await sleep(intervalMs);
+    let response: Response;
+    try {
+      response = await fetch(metadata.token_endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: DEVICE_CODE_GRANT,
+          device_code: device.device_code,
+          client_id: clientId,
+        }),
+      });
+    } catch {
+      // Network blips: keep polling while the code is still valid.
+      continue;
+    }
+    if (response.ok) {
+      const token = (await response.json()) as TokenResponse;
+      return oauthConfigFromToken(token, metadata, clientId);
+    }
+
+    const text = await response.text();
+    let body: OAuthErrorResponse = {};
+    try {
+      body = JSON.parse(text) as OAuthErrorResponse;
+    } catch {
+      // Non-JSON error bodies fall through to the generic error below.
+    }
+    switch (body.error) {
+      case "authorization_pending":
+        continue;
+      case "slow_down":
+        intervalMs += 5000;
+        continue;
+      case "access_denied":
+        throw new Error("Login was denied in the browser.");
+      case "expired_token":
+        throw new Error("The login code expired. Run `s1 login --device` again.");
+      default:
+        throw new Error(
+          `Device login failed (${response.status}): ${body.error_description ?? body.error ?? text}`
+        );
+    }
+  }
+  throw new Error("Timed out waiting for device login. Run `s1 login --device` again.");
 }
 
 export async function refreshOAuthConfig(oauth: OAuthConfig): Promise<OAuthConfig> {
