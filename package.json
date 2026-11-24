@@ -1,6 +1,6 @@
 {
   "name": "search1api-cli",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "CLI tool for Search1API - web search, maps, news, crawl, deepcrawl, sitemap, and trending",
   "type": "module",
   "exports": {
