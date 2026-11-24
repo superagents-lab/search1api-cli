@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+Adds `s1 login --device` for signing in when the browser is on another device (SSH, servers, containers). The CLI shows a URL and a short code; approve it in a browser on any device and the CLI receives the tokens (OAuth 2.0 Device Authorization Grant). Plain `s1 login` in an SSH session now suggests `--device`.
+
 ## 2.3.0 - 2026-11-05
 
 Adds `s1 deepcrawl <url>` and `deepcrawl()` / `deepcrawlStatus()` SDK helpers for `POST /deepcrawl` and `GET /deepcrawl/status/{taskId}`: crawl a whole site or section in one task and get every page as Markdown. The command starts the task, waits for it (`--timeout`, default 300 s, polling every 2 s), then prints the stats, one line per page, failed URLs and the result URL. Options: `--type sitemap|all`, `-n/--max-pages` (1-1000), repeatable `--include`/`--exclude` path rules (up to 20 each), `--format json|zip` (the CLI defaults to `json`), `-o/--output` (pages JSON or the ZIP), `--no-wait`, `--json`. `s1 deepcrawl status <taskId>` checks a task for free. 20 credits per task, any page count. Options after a subcommand now belong to that subcommand, so a global `-V` must come before it. The agent skill routes "crawl this whole site" requests to it.

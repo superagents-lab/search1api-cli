@@ -323,7 +323,12 @@ Authorize in your browser with OAuth 2.1 and PKCE.
 ```bash
 s1 login
 s1 login --no-browser
+s1 login --device
 ```
+
+`--device` is for SSH sessions, servers and containers where the browser is on
+another device. The CLI prints a URL and a short code; open the URL on any
+phone or computer, sign in, confirm the code, and the CLI saves the tokens.
 
 ### config
 

@@ -23,7 +23,7 @@ const DEVICE_CODE_GRANT = "urn:ietf:params:oauth:grant-type:device_code";
 // Dynamically registered clients cannot use the device grant, so this one is
 // created once in the Clerk Dashboard and ships with the CLI.
 export const DEVICE_CLIENT_ID =
-  process.env.SEARCH1API_OAUTH_DEVICE_CLIENT_ID ?? "";
+  process.env.SEARCH1API_OAUTH_DEVICE_CLIENT_ID ?? "m0ujmjk3mmIuuNjX";
 
 const SUCCESS_HTML = `<!doctype html>
 <html>
