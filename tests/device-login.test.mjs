@@ -102,3 +102,21 @@ test("device login explains when no client id is configured", async () => {
     await assert.rejects(loginWithDeviceCode({ clientId: "" }), /not configured/);
   }
 });
+
+test("device login stops polling when cancelled", async () => {
+  state.script = [[400, { error: "authorization_pending" }]];
+  const controller = new AbortController();
+  let polls = 0;
+  await assert.rejects(
+    loginWithDeviceCode({
+      clientId: "public-client",
+      signal: controller.signal,
+      sleep: async () => {
+        polls += 1;
+        if (polls === 2) controller.abort();
+      },
+    }),
+    /cancelled/
+  );
+  assert.equal(calls.token.length, 1);
+});

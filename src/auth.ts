@@ -378,6 +378,7 @@ export interface BrowserLoginOptions {
   port?: number;
   timeoutMs?: number;
   onReady?: (details: BrowserLoginStart) => void;
+  signal?: AbortSignal;
 }
 
 export interface BrowserLoginResult {
@@ -476,6 +477,18 @@ export async function loginWithBrowser(
         );
       }
     });
+
+    if (options.signal) {
+      if (options.signal.aborted) {
+        queueMicrotask(() => finish(new Error("Browser login cancelled.")));
+      } else {
+        options.signal.addEventListener(
+          "abort",
+          () => finish(new Error("Browser login cancelled.")),
+          { once: true }
+        );
+      }
+    }
 
     server.on("error", (error) => {
       finish(
@@ -576,10 +589,21 @@ export type DeviceLoginOptions = {
   clientId?: string;
   onPrompt?: (prompt: DeviceLoginPrompt) => void;
   sleep?: (ms: number) => Promise<void>;
+  signal?: AbortSignal;
 };
 
-const defaultSleep = (ms: number) =>
-  new Promise<void>((resolve) => setTimeout(resolve, ms));
+const defaultSleep = (ms: number, signal?: AbortSignal) =>
+  new Promise<void>((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      { once: true }
+    );
+  });
 
 /**
  * OAuth 2.0 Device Authorization Grant (RFC 8628): show a short code, let the
@@ -594,8 +618,13 @@ export async function loginWithDeviceCode(
       "Device login is not configured yet. Use `s1 login` or `s1 config set-key <key>`."
     );
   }
-  const sleep = options.sleep ?? defaultSleep;
+  const signal = options.signal;
+  const sleep = options.sleep ?? ((ms: number) => defaultSleep(ms, signal));
+  const throwIfCancelled = () => {
+    if (signal?.aborted) throw new Error("Device login cancelled.");
+  };
   const metadata = await discoverAuthorizationServer();
+  throwIfCancelled();
   if (!metadata.device_authorization_endpoint) {
     throw new Error("The authorization server does not support device login.");
   }
@@ -611,6 +640,7 @@ export async function loginWithDeviceCode(
     }),
     "Device authorization"
   );
+  throwIfCancelled();
   if (!(device.device_code && device.user_code && device.verification_uri)) {
     throw new Error("Device authorization response is missing required fields.");
   }
@@ -633,6 +663,7 @@ export async function loginWithDeviceCode(
 
   while (Date.now() < deadline) {
     await sleep(intervalMs);
+    throwIfCancelled();
     let response: Response;
     try {
       response = await fetch(metadata.token_endpoint, {

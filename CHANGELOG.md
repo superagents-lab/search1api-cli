@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-Adds `s1 login --device` for signing in when the browser is on another device (SSH, servers, containers). The CLI shows a URL and a short code; approve it in a browser on any device and the CLI receives the tokens (OAuth 2.0 Device Authorization Grant). Plain `s1 login` in an SSH session now suggests `--device`.
+`s1 login` now works when the browser is on another device (SSH, servers, containers). It opens your browser as before and also prints a URL and short code; approve the code in a browser on any device and the CLI receives the tokens (OAuth 2.0 Device Authorization Grant). Whichever finishes first is used. `s1 login --device` uses only the short-code flow.
 
 ## 2.3.0 - 2026-11-05
 

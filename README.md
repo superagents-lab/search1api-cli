@@ -318,17 +318,16 @@ Do not include credentials or private data in the message.
 
 ### login
 
-Authorize in your browser with OAuth 2.1 and PKCE.
+Sign in with OAuth. `s1 login` opens your browser and, at the same time,
+prints a URL and short code for signing in from another device. Whichever you
+finish first is used, so the same command works on your laptop and over SSH,
+on servers and in containers.
 
 ```bash
 s1 login
-s1 login --no-browser
-s1 login --device
+s1 login --no-browser   # don't open a browser; print both URLs
+s1 login --device       # only the short-code flow
 ```
-
-`--device` is for SSH sessions, servers and containers where the browser is on
-another device. The CLI prints a URL and a short code; open the URL on any
-phone or computer, sign in, confirm the code, and the CLI saves the tokens.
 
 ### config
 
