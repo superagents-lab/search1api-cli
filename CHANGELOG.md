@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.4.0 - 2026-11-24
 
 `s1 login` now works when the browser is on another device (SSH, servers, containers). It opens your browser as before and also prints a URL and short code; approve the code in a browser on any device and the CLI receives the tokens (OAuth 2.0 Device Authorization Grant). Whichever finishes first is used. `s1 login --device` uses only the short-code flow.
 
