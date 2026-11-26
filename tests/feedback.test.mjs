@@ -36,8 +36,23 @@ async function runFeedback(args, identityResponse) {
 
 test("feedback is sent under the signed-in Search1API account", async () => {
   const { calls, stdout, exitCode } = await runFeedback(
-    ["-c", "bug", "--intent", "find docs", "bingcn", "returned", "nothing"],
-    () => Response.json({ account: "user_123", signature: "a".repeat(64) })
+    [
+      "-c",
+      "bug",
+      "--outcome",
+      "worked_around",
+      "--intent",
+      "find docs",
+      "bingcn",
+      "returned",
+      "nothing",
+    ],
+    () =>
+      Response.json({
+        account: "user_123",
+        signature: "a".repeat(64),
+        email: "user@example.com",
+      })
   );
 
   assert.equal(exitCode, 0);
@@ -48,14 +63,16 @@ test("feedback is sent under the signed-in Search1API account", async () => {
     message: "bingcn returned nothing",
     intent: "find docs",
     category: "bug",
+    outcome: "worked_around",
     source: "cli",
     account: "user_123",
     account_signature: "a".repeat(64),
+    email: "user@example.com",
   });
 });
 
 test("feedback is still sent when the account lookup fails", async () => {
-  const { calls, exitCode } = await runFeedback(["--json", "it broke"], () =>
+  const { calls, exitCode } = await runFeedback(["--json", "--outcome", "blocked", "it broke"], () =>
     Response.json({ error: "Unauthorized" }, { status: 401 })
   );
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.6.0 - 2026-11-26
+
+`s1 feedback` reports carry your account's email next to the signed account, read from the gateway's `GET /feedback/identity`, so the Search1API team can reply. Updates the Agentback SDK to 0.7.0: `s1 feedback` now requires `-o/--outcome blocked|worked_around|friction` (how your task ended) and accepts `-e/--expected`, `-a/--actual`, `-s/--suggestion` and `-t/--tool`. The hint printed under a failed command shows the new form.
+
 ## 2.5.0 - 2026-11-26
 
 `s1` names itself to Search1API in `X-Search1API-Client: cli/<version>`, and the coding agent running it (from `AI_AGENT`, or markers such as `CLAUDECODE`, `CODEX_SANDBOX`, `GEMINI_CLI`) in `X-Search1API-Client-App`, so API analytics can tell CLI and agent-skill traffic apart. Analytics only; it does not affect billing or auth. Importing the package as a library sends neither header.
