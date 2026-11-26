@@ -5,6 +5,7 @@ import chalk from "chalk";
 import { Command } from "commander";
 import { feedbackHint } from "agentback/cli";
 import { registerSearchCommand } from "./commands/search.js";
+import { setClientVersion } from "./client.js";
 
 declare const __PKG_VERSION__: string | undefined;
 declare const __PKG_NAME__: string | undefined;
@@ -18,6 +19,7 @@ if (isBinary) {
   const require = createRequire(import.meta.url);
   pkg = require("../package.json");
 }
+setClientVersion(pkg.version);
 const notifier = updateNotifier({ pkg });
 if (isBinary && notifier.update) {
   notifier.notify({

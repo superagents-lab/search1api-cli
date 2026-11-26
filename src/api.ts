@@ -1,5 +1,6 @@
 import { fetchWithAuth } from "./auth.js";
 import { API_BASE } from "./config.js";
+import { clientHeaders } from "./client.js";
 
 export interface RequestOptions {
   apiKey?: string;
@@ -13,12 +14,19 @@ export async function send(
   options: RequestOptions = {}
 ): Promise<Response> {
   const url = `${API_BASE}${path}`;
-  const withSignal: RequestInit = { ...init, signal: options.signal };
+  const withSignal: RequestInit = {
+    ...init,
+    headers: {
+      ...clientHeaders(),
+      ...Object.fromEntries(new Headers(init.headers).entries()),
+    },
+    signal: options.signal,
+  };
   return options.apiKey
     ? fetch(url, {
         ...withSignal,
         headers: {
-          ...Object.fromEntries(new Headers(init.headers).entries()),
+          ...Object.fromEntries(new Headers(withSignal.headers).entries()),
           Authorization: `Bearer ${options.apiKey}`,
         },
       })

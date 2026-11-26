@@ -11,6 +11,7 @@ import {
   saveOAuthClientConfig,
   saveOAuthConfig,
 } from "./config.js";
+import { clientHeaders } from "./client.js";
 
 const CALLBACK_PATH = "/callback";
 const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
@@ -796,7 +797,7 @@ export async function fetchWithAuth(
 
 export async function validateCredential(credential: string): Promise<void> {
   const response = await fetch(`${API_BASE}/usage`, {
-    headers: { Authorization: `Bearer ${credential}` },
+    headers: { ...clientHeaders(), Authorization: `Bearer ${credential}` },
   });
   if (!response.ok) {
     const text = await response.text();
