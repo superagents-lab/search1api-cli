@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+`s1` names itself to Search1API in `X-Search1API-Client: cli/<version>`, and the coding agent running it (from `AI_AGENT`, or markers such as `CLAUDECODE`, `CODEX_SANDBOX`, `GEMINI_CLI`) in `X-Search1API-Client-App`, so API analytics can tell CLI and agent-skill traffic apart. Analytics only; it does not affect billing or auth. Importing the package as a library sends neither header.
+
 ## 2.4.0 - 2026-11-24
 
 `s1 login` now works when the browser is on another device (SSH, servers, containers). It opens your browser as before and also prints a URL and short code; approve the code in a browser on any device and the CLI receives the tokens (OAuth 2.0 Device Authorization Grant). Whichever finishes first is used. `s1 login --device` uses only the short-code flow.
