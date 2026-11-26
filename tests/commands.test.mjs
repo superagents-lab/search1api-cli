@@ -89,5 +89,5 @@ test("points agents at s1 feedback when a command fails", () => {
   });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /^Error: /);
-  assert.match(result.stderr, /s1 feedback "<what happened>"/);
+  assert.match(result.stderr, /s1 feedback --outcome blocked "<what happened>"/);
 });

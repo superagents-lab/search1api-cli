@@ -298,18 +298,23 @@ s1 balance
 
 ### feedback
 
-Report a wrong result, an error you could not resolve, or a missing capability to the Search1API team. Agents can use it too. When you are logged in, the report is linked to your account so the team can follow up.
+Report a wrong result, an error you could not resolve, or a missing capability to the Search1API team. Agents can use it too. When you are logged in, the report is linked to your account, with its email, so the team can follow up.
 
 ```bash
-s1 feedback "bingcn returned no results for a Chinese query"
-s1 feedback --category feature_request --intent "monitor a site" "Need a webhook when a page changes"
-echo "details..." | s1 feedback -
+s1 feedback --outcome worked_around "bingcn returned no results for a Chinese query"
+s1 feedback --outcome blocked --category feature_request --intent "monitor a site" "Need a webhook when a page changes"
+echo "details..." | s1 feedback --outcome friction -
 ```
 
 | Option | Description |
 |--------|-------------|
+| `-o, --outcome <outcome>` | Required. How your task ended: `blocked` (could not finish), `worked_around` (finished another way), `friction` (finished after retries or guessing) |
 | `-c, --category <category>` | `bug`, `feature_request`, `docs`, or `other` |
 | `-i, --intent <text>` | What you were trying to do |
+| `-e, --expected <text>` | What you expected to happen |
+| `-a, --actual <text>` | What happened instead: the commands you ran and the error text |
+| `-s, --suggestion <text>` | What would have helped |
+| `-t, --tool <command>` | The s1 command that had the problem |
 | `-r, --request-id <id>` | Request id of the call that had the problem |
 | `-m, --model <name>` | Your model name, if you are an AI agent |
 | `--json` | Print the receipt as JSON |
